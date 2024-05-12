@@ -1,4 +1,4 @@
-﻿namespace IsaTestAgent
+﻿namespace IsaTestAgent.TestService
 {
     public record TestSettings
     {
@@ -14,15 +14,15 @@
 
         public TestSettings(float deltaRot, float deltaZ, float maxRot, float minRot, float maxZ, float minZ, int personsCount)
         {
-            this.DeltaRot = deltaRot;
-            this.DeltaZ = deltaZ;
-            this.MaxRot = maxRot;
-            this.MinRot = minRot;
-            this.MaxZ = maxZ;
-            this.MinZ = minZ;
-            this.PersonsCount = personsCount;
+            DeltaRot = deltaRot;
+            DeltaZ = deltaZ;
+            MaxRot = maxRot;
+            MinRot = minRot;
+            MaxZ = maxZ;
+            MinZ = minZ;
+            PersonsCount = personsCount;
         }
     }
 
-    public enum TargetSensors { all, haarCascade, keyPoints, keyPointsRect};
+    public enum TargetSensors { all, haarCascade, keyPoints, keyPointsRect };
 }

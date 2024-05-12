@@ -8,10 +8,35 @@
   <ItemGroup>
     <PackageReference Include="AForge.Video.DirectShow" Version="2.2.5" />
     <PackageReference Include="CSWebCam" Version="1.0.3" />
+    <PackageReference Include="NUnit" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ISA 2\ISA 2.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Alex_Legion\.nuget\packages\cswebcam\1.0.3\build\\..\lib\net472\CSWebCam.Credits.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Alex_Legion\.nuget\packages\cswebcam\1.0.3\build\\..\lib\net472\CSWebCam.License.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Alex_Legion\.nuget\packages\cswebcam\1.0.3\build\\..\lib\net472\CSWebCam.Credits.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Alex_Legion\.nuget\packages\cswebcam\1.0.3\build\\..\lib\net472\CSWebCam.License.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Alex_Legion\.nuget\packages\cswebcam\1.0.3\build\\..\lib\net472\CSWebCam.Credits.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\Alex_Legion\.nuget\packages\cswebcam\1.0.3\build\\..\lib\net472\CSWebCam.License.txt" />
   </ItemGroup>
 
 </Project>

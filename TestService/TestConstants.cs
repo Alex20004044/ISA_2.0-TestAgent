@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IsaTestAgent
+namespace IsaTestAgent.TestService
 {
     public static class TestConstants
     {
