@@ -2,23 +2,27 @@
 {
     public record TestSettings
     {
-        public readonly float deltaRot = 10f;
-        public readonly float deltaZ = 0.05f;
-        public readonly float maxRot = 30f;
-        public readonly float minRot = -30f;
-        public readonly float maxZ = 1f;
-        public readonly float minZ = 0.3f;
-        public readonly int personsCount = 5;
+        public readonly TargetSensors TargetSensors;
+
+        public readonly float DeltaRot;
+        public readonly float DeltaZ;
+        public readonly float MaxRot;
+        public readonly float MinRot;
+        public readonly float MaxZ;
+        public readonly float MinZ;
+        public readonly int PersonsCount;
 
         public TestSettings(float deltaRot, float deltaZ, float maxRot, float minRot, float maxZ, float minZ, int personsCount)
         {
-            this.deltaRot = deltaRot;
-            this.deltaZ = deltaZ;
-            this.maxRot = maxRot;
-            this.minRot = minRot;
-            this.maxZ = maxZ;
-            this.minZ = minZ;
-            this.personsCount = personsCount;
+            this.DeltaRot = deltaRot;
+            this.DeltaZ = deltaZ;
+            this.MaxRot = maxRot;
+            this.MinRot = minRot;
+            this.MaxZ = maxZ;
+            this.MinZ = minZ;
+            this.PersonsCount = personsCount;
         }
     }
+
+    public enum TargetSensors { all, haarCascade, keyPoints, keyPointsRect};
 }

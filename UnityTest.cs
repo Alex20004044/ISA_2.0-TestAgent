@@ -11,10 +11,12 @@ using System.Text.Json;
 using System.Collections.Generic;
 using ISA_2;
 using System.Linq;
+using static IsaTestAgent.TestConstants;
+
 
 namespace IsaTestAgent
 {
-    public class UnityTest : TestSettings
+    public class UnityTest
     {
         public string ipAdress = "127.0.0.1";
         public int port = 54010;
@@ -31,19 +33,6 @@ namespace IsaTestAgent
         static CommandMove lastRecievedCoords = new CommandMove(-1, -1, -1);
         static Mat shared_frame = new Mat();
 
-        const float calibrateDistance = 0.5f;
-
-        /*//Short Demo
-        const int personsCount = 1;
-
-        const float minZ = 0.3f;
-        const float maxZ = 1f;
-        const float deltaZ = 0.1f;
-
-        const float minRot = 0f;
-        const float maxRot = 10f;
-        const float deltaRot = 10f;*/
-
         ~UnityTest()
         {
             connection.Dispose();
@@ -54,25 +43,22 @@ namespace IsaTestAgent
             CreateConnection();
             SetupVideoStream();
 
-            ComplexTests();
-            //Demo();
+            ComplexTests(FullTest);
 
             Console.WriteLine("Enter any text to close test");
             Console.ReadLine();
         }
 
-        void ComplexTests()
+        void ComplexTests(TestSettings testSettings)
         {
-            var sensors = GetSensorTestDatas();
-            
-            Calibrate(sensors);
+            List<SensorTestData> sensors = GetSensorsWithCalibration(testSettings.TargetSensors);
 
-            for (int i = 0; i < personsCount; i++)
+            for (int i = 0; i < testSettings.PersonsCount; i++)
             {
                 ChangePerson(i);
-                for (float z = minZ; z <= maxZ + deltaZ / 2; z += deltaZ)
+                for (float z = testSettings.MinZ; z <= testSettings.MaxZ + testSettings.DeltaZ / 2; z += testSettings.DeltaZ)
                 {
-                    for (float rot = minRot; rot < maxRot + deltaRot / 2; rot += deltaRot)
+                    for (float rot = testSettings.MinRot; rot < testSettings.MaxRot + testSettings.DeltaRot / 2; rot += testSettings.DeltaRot)
                     {
                         Move(0, z, rot);
                         using var mat = GetMat();
@@ -90,65 +76,44 @@ namespace IsaTestAgent
 
             ShowResults(sensors);
 
-        }
-        void Demo()
+        }    
+
+        private List<SensorTestData> GetSensorsWithCalibration(TargetSensors targetSensors = TargetSensors.all)
         {
-            //var imageProcessor = new ImageProcessorHaarCascade();
-            //var imageProcessor = new ImageProcessorKeyPoints(width, height);
-            var imageProcessor = new ImageProcessorKeyPointsRect(width, height);
+            var sensors = GetSensorTestDatas(targetSensors);
 
-
-            var sensor = new SensorTestData(imageProcessor, "Demo");
-
-            Calibrate(new SensorTestData[] { sensor });
-            Console.WriteLine($"CalibrateCoefficient: {sensor.CalibrateCoefficient}");
-            for (int i = 0; i < personsCount; i++)
-            {
-                ChangePerson(0);
-                for (float z = minZ; z <= maxZ + deltaZ / 2; z += deltaZ)
-                {
-                    for (float rot = minRot; rot < maxRot + deltaRot / 2; rot += deltaRot)
-                    {
-                        Move(0, z, rot);
-                        using var mat = GetMat();
-
-                        var dist = sensor.GetDistanceFromImageAndDrawBorders(mat);
-                        Console.WriteLine($"Person: {i}, Z: {z}, Rot: {rot}, Measured: {dist}, Error: {dist - z}");
-
-                        sensor.AddData(z, dist);
-
-                        CvInvoke.Imshow("Unity", mat);
-                        CvInvoke.WaitKey(sendDelay);
-                    }
-                }
-            }
-
-            ShowResults(new SensorTestData[] { sensor });
+            Calibrate(sensors);
+            return sensors;
         }
-        List<SensorTestData> GetSensorTestDatas()
+
+        List<SensorTestData> GetSensorTestDatas(TargetSensors targetSensors)
         {
             List<SensorTestData> sensors = new List<SensorTestData>();
-            sensors.Add(new SensorTestData(new ImageProcessorHaarCascade(), "HaarCascade"));
-            sensors.Add(new SensorTestData(new ImageProcessorKeyPoints(width, height), "YNN"));
-            sensors.Add(new SensorTestData(new ImageProcessorKeyPointsRect(width, height), "YNNRect"));
+            bool isAll = targetSensors == TargetSensors.all;
+            if (isAll || targetSensors == TargetSensors.haarCascade)
+                sensors.Add(new SensorTestData(new ImageProcessorHaarCascade(), "HaarCascade"));
+            if (isAll || targetSensors == TargetSensors.keyPoints)
+                sensors.Add(new SensorTestData(new ImageProcessorKeyPoints(width, height), "YNN"));
+            if (isAll || targetSensors == TargetSensors.keyPointsRect)
+                sensors.Add(new SensorTestData(new ImageProcessorKeyPointsRect(width, height), "YNNRect"));
 
             return sensors;
         }
 
         void Calibrate(IEnumerable<SensorTestData> sensors)
         {
-            Move(0, calibrateDistance, 0);
+            Move(0, CalibrationDistance, 0);
             using var mat = GetMat();
             foreach (SensorTestData sensor in sensors)
             {
                 using var matCopy = mat.Clone();
-                sensor.Calibrate(calibrateDistance, matCopy);
+                sensor.Calibrate(CalibrationDistance, matCopy);
             }
         }
 
         void TestSensor(IEnumerable<SensorTestData> sensors, Mat frame, float realDistance)
         {
-            foreach(var sensor in sensors)
+            foreach (var sensor in sensors)
             {
                 sensor.AddData(realDistance, frame);
             }
@@ -159,10 +124,8 @@ namespace IsaTestAgent
             foreach (var sensor in sensors)
             {
                 Console.WriteLine($"Sensor: {sensor.ImageProcessorName}, AvgError: {sensor.AvgAbsError()}, AvgRelativeError: {sensor.AvgRealativeAbsError()}, MaxError: {sensor.MaxError()}, Measures: {sensor.Distances.Count()}, FatalErrorsCount: {sensor.FatalErrorsCount}");
-            }    
+            }
         }
-
-        
 
         void CreateConnection()
         {
@@ -178,6 +141,7 @@ namespace IsaTestAgent
 
             connection.OnMessageRecieved += Connection_OnMessageRecieved;
         }
+
         private void Connection_OnMessageRecieved(string message)
         {
             Console.WriteLine("Message recieved in UnityTest: " + message);
@@ -196,7 +160,6 @@ namespace IsaTestAgent
                 Console.WriteLine(ex.ToString());
             }
         }
-
 
         private void SetupVideoStream()
         {
@@ -228,6 +191,7 @@ namespace IsaTestAgent
                 }
             }
         }
+
         private void ProcessFrame(object sender, NewFrameEventArgs eventArgs)
         {
             // get new frame
@@ -285,24 +249,5 @@ namespace IsaTestAgent
             }
         }
         #endregion
-
-        public void OpenCv()
-        {
-            VideoCapture videoCapture = new VideoCapture(1);
-            videoCapture.Start();
-            Console.WriteLine(videoCapture.CaptureSource.ToString());
-
-            IImageSource imageSource = new ImageSourceVideoCapture(videoCapture);
-            Mat frame;
-            while (true)
-            {
-                frame = imageSource.GetImage();
-                CvInvoke.Imshow("Unity", frame);
-
-                int key = CvInvoke.WaitKey(1);
-                if (key == (int)ConsoleKey.Enter)
-                    break;
-            }
-        }
     }
 }
