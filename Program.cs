@@ -9,6 +9,7 @@ using Emgu.CV.Dnn;
 using Emgu.CV.Structure;
 using ISA_2;
 using ISA_2.ImageProcessing;
+using ISA_2.ImageProcessing.ImageProcessors;
 
 namespace IsaTestAgent
 {
@@ -31,21 +32,24 @@ namespace IsaTestAgent
         const int columnWidth = 10;
         static void Main(string[] args)
         {
-            new UnityTest().Start();
+            //new UnityTest().Start();
 
-          
-            //TestWebCam(new ImageProcessorLBF());
+            TestWebCam();
             //TestDistanceSensor();
             //TestTable();
         }
 
-        private static void TestWebCam(IImageProcessor imageProcessor)
+        private static void TestWebCam()
         {
             Console.WriteLine("Test Web Cam");
 
             VideoCapture videoCapture = new VideoCapture(0);
             videoCapture.Start();
 
+            IImageProcessor imageProcessor;        
+            //imageProcessor = new ImageProcessorHaarCascade();
+
+            imageProcessor = new ImageProcessorYNNFaceLandmarks(videoCapture.Width, videoCapture.Height);
 
             while (true)
             {
@@ -130,7 +134,7 @@ namespace IsaTestAgent
             var images = GetImageSet();
             List<TestImageProcessorData> testImageProcessorDatas = new List<TestImageProcessorData>();
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorHaarCascade(), "HaarCascade"));
-            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorKeyPoints(1920, 1080), "YNN"));
+            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorYNNFaceLandmarks(1920, 1080), "YNN"));
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorKeyPointsRect(1920, 1080), "YNNRect"));
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorLBF(), "LBF"));
 

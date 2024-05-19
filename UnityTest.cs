@@ -10,6 +10,7 @@ using System.Linq;
 using static IsaTestAgent.TestService.TestConstants;
 using IsaTestAgent.TestService;
 using static IsaTestAgent.TestService.TestsApi;
+using ISA_2.ImageProcessing.ImageProcessors;
 
 namespace IsaTestAgent;
 
@@ -79,7 +80,7 @@ public class UnityTest
         if (isAll || targetSensors == TargetSensors.haarCascade)
             sensors.Add(new SensorTestData(new ImageProcessorHaarCascade(), "HaarCascade"));
         if (isAll || targetSensors == TargetSensors.YNN_KeyPoints)
-            sensors.Add(new SensorTestData(new ImageProcessorKeyPoints(width, height), "YNN"));
+            sensors.Add(new SensorTestData(new ImageProcessorYNNFaceLandmarks(width, height), "YNN"));
         if (isAll || targetSensors == TargetSensors.YNNRect)
             sensors.Add(new SensorTestData(new ImageProcessorKeyPointsRect(width, height), "YNNRect"));
         if (isAll || targetSensors == TargetSensors.LBF)
