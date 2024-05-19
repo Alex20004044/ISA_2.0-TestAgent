@@ -2,8 +2,6 @@
 {
     public record TestSettings
     {
-        public readonly TargetSensors TargetSensors;
-
         public readonly float DeltaRot;
         public readonly float DeltaZ;
         public readonly float MaxRot;
@@ -24,5 +22,5 @@
         }
     }
 
-    public enum TargetSensors { all, haarCascade, keyPoints, keyPointsRect };
+    public enum TargetSensors { all, haarCascade, YNN_KeyPoints, YNNRect, LBF, LBF_YNN_Based };
 }

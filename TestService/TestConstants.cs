@@ -23,7 +23,7 @@ namespace IsaTestAgent.TestService
         public static readonly TestSettings ShortTest = new TestSettings(
             deltaRot: 10f,
             deltaZ: 0.1f,
-            maxRot: 10f,
+            maxRot: 30f,
             minRot: 0,
             maxZ: 1f,
             minZ: 0.3f,

@@ -21,7 +21,7 @@ namespace IsaTestAgent
         const string testTableRotate30 = @"D:\Data\Projects\ISA 2.0\TestSet\6 VRotate 30";
 
 
-        static string dataSetPath => testTableRotate30;
+        static string dataSetPath => realPhoto;
         const int СalibrateImageIndex = 4;
 
 
@@ -32,46 +32,28 @@ namespace IsaTestAgent
         static void Main(string[] args)
         {
             new UnityTest().Start();
-            //TestWebCam();
+
+          
+            //TestWebCam(new ImageProcessorLBF());
             //TestDistanceSensor();
             //TestTable();
         }
 
-        private static void TestWebCam()
+        private static void TestWebCam(IImageProcessor imageProcessor)
         {
             Console.WriteLine("Test Web Cam");
 
             VideoCapture videoCapture = new VideoCapture(0);
             videoCapture.Start();
 
-            using var model = new FaceDetectorYN(
-                model: ynnModelPath,
-                config: string.Empty,
-                inputSize: new Size(videoCapture.Width, videoCapture.Height),
-                scoreThreshold: 0.9f,
-                nmsThreshold: 0.3f,
-                topK: 5000,
-                backendId: Emgu.CV.Dnn.Backend.Default,
-                targetId: Target.Cpu);
-
-            CascadeClassifier defaultClassifier = new CascadeClassifier(@"D:\Data\Projects\ISA 2.0\ISA 2\Resources\haarcascade_frontalface_default.xml");
 
             while (true)
             {
                 Mat frame = videoCapture.QueryFrame();
-                Image<Gray, byte> grayImage = frame.ToImage<Gray, byte>();
+                var measure = imageProcessor.MeasureFaceAndDrawBorders(frame);
+                Console.WriteLine("Measure: " + measure);
 
-                var faces = new Mat();
-                model.Detect(frame, faces);
-                DrawDetectedFaces(frame, faces, renderConfidence);
-
-
-                Rectangle[] facesDef = defaultClassifier.DetectMultiScale(grayImage, 1.1, 3);
-                foreach (Rectangle x in facesDef)
-                {
-                    CvInvoke.Rectangle(frame, x, new MCvScalar(0, 0, 255));
-                }
-                CvInvoke.Imshow("IsTes", frame);
+                CvInvoke.Imshow("IsaTest", frame);
                 //CvInvoke.Imshow("ISA", grayImage);
                 int key = CvInvoke.WaitKey(1);
 
@@ -149,6 +131,8 @@ namespace IsaTestAgent
             List<TestImageProcessorData> testImageProcessorDatas = new List<TestImageProcessorData>();
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorHaarCascade(), "HaarCascade"));
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorKeyPoints(1920, 1080), "YNN"));
+            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorKeyPointsRect(1920, 1080), "YNNRect"));
+            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorLBF(), "LBF"));
 
             testImageProcessorDatas.ForEach(x => x.ProcessImages(calibratePhotoIndex, images));
             
@@ -178,7 +162,8 @@ namespace IsaTestAgent
 
             var imageSet = GetImageSet();
             //IImageProcessor imageProcessor = new ImageProcessorHaarCascade();
-            IImageProcessor imageProcessor = new ImageProcessorKeyPoints(1920, 1080);
+            //IImageProcessor imageProcessor = new ImageProcessorKeyPoints(1920, 1080);
+            IImageProcessor imageProcessor = new ImageProcessorLBF();
             var distanceSensor = new DistanceSensorCamera(imageProcessor, null);
 
             distanceSensor.Calibrate(imageSet[calibratePhotoIndex].image.Clone(), imageSet[calibratePhotoIndex].distance, out var calibrateCoefficient);

@@ -27,15 +27,15 @@ public class UnityTest
 
         SetupVideoStream();
         //ComplexTests(FullTest);
-        ComplexTests(ShortTest);
+        ComplexTests(ShortTest, TargetSensors.all);
 
         Console.WriteLine("Enter any text to close test");
         Console.ReadLine();
     }
 
-    void ComplexTests(TestSettings testSettings)
+    void ComplexTests(TestSettings testSettings, TargetSensors targetSensors = TargetSensors.all)
     {
-        List<SensorTestData> sensors = GetSensorsWithCalibration(testSettings.TargetSensors);
+        List<SensorTestData> sensors = GetSensorsWithCalibration(targetSensors);
 
         for (int i = 0; i < testSettings.PersonsCount; i++)
         {
@@ -47,7 +47,10 @@ public class UnityTest
                     Move(0, z, rot);
                     using var mat = GetMat();
                     Console.WriteLine($"Person: {i}, Z: {z}, Rot: {rot}");
-
+                    
+                    //При тесте одного детектора - выводим результат его работы
+                    if (sensors.Count() == 1)
+                        sensors.First().GetDistanceFromImageAndDrawBorders(mat);
 
                     CvInvoke.Imshow("Unity", mat);
 
@@ -59,8 +62,7 @@ public class UnityTest
         }
 
         ShowResults(sensors);
-
-    }    
+    }
 
     private List<SensorTestData> GetSensorsWithCalibration(TargetSensors targetSensors = TargetSensors.all)
     {
@@ -76,10 +78,14 @@ public class UnityTest
         bool isAll = targetSensors == TargetSensors.all;
         if (isAll || targetSensors == TargetSensors.haarCascade)
             sensors.Add(new SensorTestData(new ImageProcessorHaarCascade(), "HaarCascade"));
-        if (isAll || targetSensors == TargetSensors.keyPoints)
+        if (isAll || targetSensors == TargetSensors.YNN_KeyPoints)
             sensors.Add(new SensorTestData(new ImageProcessorKeyPoints(width, height), "YNN"));
-        if (isAll || targetSensors == TargetSensors.keyPointsRect)
+        if (isAll || targetSensors == TargetSensors.YNNRect)
             sensors.Add(new SensorTestData(new ImageProcessorKeyPointsRect(width, height), "YNNRect"));
+        if (isAll || targetSensors == TargetSensors.LBF)
+            sensors.Add(new SensorTestData(new ImageProcessorLBF(), "LBF"));        
+        if (isAll || targetSensors == TargetSensors.LBF)
+            sensors.Add(new SensorTestData(new ImageProcessorLBF(), "LBF"));
 
         return sensors;
     }
