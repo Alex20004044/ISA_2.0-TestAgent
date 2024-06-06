@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Emgu.CV;
 using ISA_2;
+using ISA_2.ImageProcessing.ImageProcessors;
 
 namespace IsaTestAgent
 {

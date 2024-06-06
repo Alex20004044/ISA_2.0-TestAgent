@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using Emgu.CV;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Dnn;
-using Emgu.CV.Structure;
 using ISA_2;
 using ISA_2.ImageProcessing;
 using ISA_2.ImageProcessing.ImageProcessors;
@@ -32,9 +28,9 @@ namespace IsaTestAgent
         const int columnWidth = 10;
         static void Main(string[] args)
         {
-            //new UnityTest().Start();
+            new UnityTest().Start();
 
-            TestWebCam();
+            //TestWebCam();
             //TestDistanceSensor();
             //TestTable();
         }
@@ -49,7 +45,10 @@ namespace IsaTestAgent
             IImageProcessor imageProcessor;        
             //imageProcessor = new ImageProcessorHaarCascade();
 
-            imageProcessor = new ImageProcessorYNNFaceLandmarks(videoCapture.Width, videoCapture.Height);
+            //imageProcessor = new ImageProcessorYNNFaceLandmarks(videoCapture.Width, videoCapture.Height);
+            //imageProcessor = new ImageProcessorYNNFaceRect(videoCapture.Width, videoCapture.Height);
+            imageProcessor = new ImageProcessorLandmarksHaarCascadeLBF();
+            imageProcessor = new ImageProcessorLandmarksYNN_LBF(videoCapture.Width, videoCapture.Height);
 
             while (true)
             {
@@ -66,66 +65,6 @@ namespace IsaTestAgent
             }
         }
 
-        #region YNN Draw
-        static void DrawDetectedFaces(Mat frame, Mat faces, bool renderConfidence)
-        {
-            if (faces.Rows <= 0)
-            {
-                return;
-            }
-
-            // facesData is multidimensional array.
-            // The first dimension is the index of the face, the second dimension is the data for that face.
-            // The data for each face is 15 elements long:
-            //  - the first 4 elements are the bounding box of the face (x, y, width, height)
-            //  - the next 10 elements are the x and y coordinates of 5 facial landmarks:
-            //      right eye, left eye, nose tip, right mouth corner, left mouth corner
-            //  - the last element is the confidence score
-            var facesData = (float[,])faces.GetData(jagged: true);
-
-            for (var i = 0; i < facesData.GetLength(0); i++)
-            {
-                DrawFaceRectangle(frame, (int)facesData[i, 0], (int)facesData[i, 1], (int)facesData[i, 2], (int)facesData[i, 3]);
-                DrawFaceLandMarks(frame, i, facesData);
-
-                if (renderConfidence)
-                {
-                    DrawConfidenceText(frame, (int)facesData[i, 0], (int)facesData[i, 1] - 5, facesData[i, 14]);
-                }
-            }
-        }
-
-        static void DrawFaceRectangle(Mat frame, int x, int y, int width, int height)
-        {
-            var faceRectangle = new Rectangle(x, y, width, height);
-            CvInvoke.Rectangle(frame, faceRectangle, new MCvScalar(0, 255, 0), 1);
-        }
-
-        static void DrawFaceLandMarks(Mat frame, int faceIndex, float[,] facesData)
-        {
-            var landMarkColors = new MCvScalar[]
-            {
-                new MCvScalar(255, 0, 0),   // right eye
-                new MCvScalar(0, 0, 255),   // left eye
-                new MCvScalar(0, 255, 0),   // nose tip
-                new MCvScalar(255, 0, 255), // right mouth corner
-                new MCvScalar(0, 255, 255)  // left mouth corner
-            };
-
-            for (var landMark = 0; landMark < 5; landMark++)
-            {
-                var x = (int)facesData[faceIndex, 4 + landMark * 2];
-                var y = (int)facesData[faceIndex, 4 + landMark * 2 + 1];
-                CvInvoke.Circle(frame, new Point(x, y), 2, landMarkColors[landMark], -1);
-            }
-        }
-
-        static void DrawConfidenceText(Mat frame, int x, int y, float confidence)
-        {
-            CvInvoke.PutText(frame, $"{confidence:N4}", new Point(x, y), FontFace.HersheyComplex, 0.3, new MCvScalar(0, 0, 255), 1);
-        }
-        #endregion
-
         private static void TestTable(int calibratePhotoIndex = СalibrateImageIndex)
         {
             Console.WriteLine("Test Distance Sensor");
@@ -135,8 +74,9 @@ namespace IsaTestAgent
             List<TestImageProcessorData> testImageProcessorDatas = new List<TestImageProcessorData>();
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorHaarCascade(), "HaarCascade"));
             testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorYNNFaceLandmarks(1920, 1080), "YNN"));
-            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorKeyPointsRect(1920, 1080), "YNNRect"));
-            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorLBF(), "LBF"));
+            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorYNNFaceRect(1920, 1080), "YNNRect"));
+            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorLandmarksHaarCascadeLBF(), "HaarCascade_LBF"));
+            testImageProcessorDatas.Add(new TestImageProcessorData(new ImageProcessorLandmarksYNN_LBF(1920, 1080), "YNN_LBF"));
 
             testImageProcessorDatas.ForEach(x => x.ProcessImages(calibratePhotoIndex, images));
             
@@ -167,7 +107,7 @@ namespace IsaTestAgent
             var imageSet = GetImageSet();
             //IImageProcessor imageProcessor = new ImageProcessorHaarCascade();
             //IImageProcessor imageProcessor = new ImageProcessorKeyPoints(1920, 1080);
-            IImageProcessor imageProcessor = new ImageProcessorLBF();
+            IImageProcessor imageProcessor = new ImageProcessorLandmarksYNN_LBF(1920, 1080);
             var distanceSensor = new DistanceSensorCamera(imageProcessor, null);
 
             distanceSensor.Calibrate(imageSet[calibratePhotoIndex].image.Clone(), imageSet[calibratePhotoIndex].distance, out var calibrateCoefficient);
@@ -245,8 +185,6 @@ namespace IsaTestAgent
                 MaxError = Distances.Max(x => MathF.Abs(x.measuredDist - x.realDist));
                 AvgError = Distances.Average(x => MathF.Abs(x.measuredDist - x.realDist));
             }
-
-
         }
     }
 }

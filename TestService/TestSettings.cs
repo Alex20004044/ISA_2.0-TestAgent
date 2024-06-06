@@ -22,5 +22,5 @@
         }
     }
 
-    public enum TargetSensors { all, haarCascade, YNN_KeyPoints, YNNRect, LBF, LBF_YNN_Based };
+    public enum TargetSensors { all, haarCascade, YNN, YNNRect, HaarCascade_LBF, YNN_LBF };
 }

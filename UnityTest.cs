@@ -1,11 +1,9 @@
 ﻿using System;
 using Emgu.CV;
-using ISA_2.ImageProcessing;
 using AForge.Video.DirectShow;
 using AForge.Video;
 using System.Drawing;
 using System.Collections.Generic;
-using ISA_2;
 using System.Linq;
 using static IsaTestAgent.TestService.TestConstants;
 using IsaTestAgent.TestService;
@@ -28,7 +26,9 @@ public class UnityTest
 
         SetupVideoStream();
         //ComplexTests(FullTest);
-        ComplexTests(ShortTest, TargetSensors.all);
+        //ComplexTests(FullTest, TargetSensors.all);
+        ComplexTests(RotateTest, TargetSensors.all);
+        //ComplexTests(ShortTest, TargetSensors.all);
 
         Console.WriteLine("Enter any text to close test");
         Console.ReadLine();
@@ -79,14 +79,14 @@ public class UnityTest
         bool isAll = targetSensors == TargetSensors.all;
         if (isAll || targetSensors == TargetSensors.haarCascade)
             sensors.Add(new SensorTestData(new ImageProcessorHaarCascade(), "HaarCascade"));
-        if (isAll || targetSensors == TargetSensors.YNN_KeyPoints)
+        if (isAll || targetSensors == TargetSensors.YNN)
             sensors.Add(new SensorTestData(new ImageProcessorYNNFaceLandmarks(width, height), "YNN"));
         if (isAll || targetSensors == TargetSensors.YNNRect)
-            sensors.Add(new SensorTestData(new ImageProcessorKeyPointsRect(width, height), "YNNRect"));
-        if (isAll || targetSensors == TargetSensors.LBF)
-            sensors.Add(new SensorTestData(new ImageProcessorLBF(), "LBF"));        
-        if (isAll || targetSensors == TargetSensors.LBF)
-            sensors.Add(new SensorTestData(new ImageProcessorLBF(), "LBF"));
+            sensors.Add(new SensorTestData(new ImageProcessorYNNFaceRect(width, height), "YNNRect"));
+        if (isAll || targetSensors == TargetSensors.HaarCascade_LBF)
+            sensors.Add(new SensorTestData(new ImageProcessorLandmarksHaarCascadeLBF(), "HaarCascade_LBF"));        
+        if (isAll || targetSensors == TargetSensors.YNN_LBF)
+            sensors.Add(new SensorTestData(new ImageProcessorLandmarksYNN_LBF(width, height), "YNN_LBF"));
 
         return sensors;
     }

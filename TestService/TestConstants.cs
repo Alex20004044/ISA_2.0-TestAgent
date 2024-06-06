@@ -10,6 +10,16 @@ namespace IsaTestAgent.TestService
     {
         public const float CalibrationDistance = 0.5f;
 
+        public static readonly TestSettings RotateTest = new TestSettings(
+            deltaRot: 10f,
+            deltaZ: 0.05f,
+            maxRot: 50f,
+            minRot: 20f,
+            maxZ: 1f,
+            minZ: 0.3f,
+            personsCount: 5
+            );
+
         public static readonly TestSettings FullTest = new TestSettings(
             deltaRot: 10f,
             deltaZ: 0.05f,
